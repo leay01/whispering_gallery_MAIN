@@ -161,24 +161,26 @@ def loader_plotter_chunk(baseline_filename, disk_res_filename, folder, plot_star
     return baseline_data, disk_resonance_data
 
 
-def find_plot_dips(BL, disk, f_start, f_stop): # for S21 dips in VNA data, need to already have baseline & disk data loaded in as variables
+def find_plot_dips(BL, disk, f_start=None, f_stop=None, n_dips): # for S21 dips in VNA data, need to already have baseline & disk data loaded in as variables
 
     # prepare signal data 
     S21_subtracted = (20*np.log10(np.abs(disk['Complex (decimal)']))
-                -20*np.log10(np.abs(BL['Complex (decimal)']))) # just to get the calibrated one ready
-    S21_freqs = 1e-9*BL_concat1['Freq (Hz)'] # convert to GHz
+                  -20*np.log10(np.abs(BL['Complex (decimal)']))) # just to get the calibrated one ready
+    S21_freqs = 1e-9*BL['Freq (Hz)'] # convert to GHz
     S21_sub = pd.DataFrame({'freqs':S21_freqs, 'S21':S21_subtracted}) # make calibrated data dictionary
-    S21_subt = S21_sub[(S21_sub['freqs']>=f_start) & (S21_sub['freqs']<=f_stop)] # limit by frequency range
-
+    if f_start is not None & f_stop is not None: 
+        S21_subt = S21_sub[(S21_sub['freqs']>=f_start) & (S21_sub['freqs']<=f_stop)]
+    else: 
+        S21_subt = S21_sub
     # peak finding
     S21_dips, _dips = spg.find_peaks(-S21_subt['S21']) # negative because need to flip
     dip_freqs = S21_subt['freqs'].iloc[S21_dips] # get frequency values for dips
     dip_S21 = S21_subt['S21'].iloc[S21_dips] # get S21 of the located dips
     dip_dict = {'freqs': dip_freqs, 'dip S21': dip_S21} # make dip dictionary
     dips_sorted = pd.DataFrame(dip_dict).sort_values('dip S21', ascending=True).reset_index(inplace=False) # make DF where dips sorted by mag
-    top_dips = dips_sorted.iloc[0:10] # grab top 10 deepest dips
+    top_dips = dips_sorted.iloc[0:n_dips] # grab top 10 deepest dips
 
-    plt.figure(figsize = (15,10))
+    #plt.figure(figsize = (15,10))
     plt.plot(S21_subt['freqs'], S21_subt['S21'])
     for i in range(len(top_dips)):
         plt.scatter(top_dips['freqs'].loc[i], top_dips['dip S21'].loc[i], 
@@ -213,4 +215,3 @@ def find_plot_Q_peaks(Q_freq_data):
 
     return Qfac_all, top_peaks
 
-    
