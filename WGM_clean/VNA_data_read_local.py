@@ -18,14 +18,14 @@ def loader(baseline_filename, disk_res_filename, folder):
     disk_resonance_data['Complex (decimal)'] = disk_resonance_data['Complex (decimal)'].str.replace(r'[()]', '', regex=True).apply(complex)
     return baseline_data, disk_resonance_data
 
-def loader_plotter(baseline_filename, disk_res_filename, folder):
+def loader_plotter(baseline_filename, disk_res_filename, folder, title='title'):
     folder_path = '/Users/leayamashiro/whispering_gallery_MAIN/whispering_gallery/' + folder + '/'
     baseline_data = pd.read_csv(folder_path + baseline_filename)
     baseline_data['Complex (decimal)'] = baseline_data['Complex (decimal)'].str.replace(r'[()]', '', regex=True).apply(complex)
     disk_resonance_data = pd.read_csv(folder_path + disk_res_filename)
     disk_resonance_data['Complex (decimal)'] = disk_resonance_data['Complex (decimal)'].str.replace(r'[()]', '', regex=True).apply(complex)
     
-    fig, ax = plt.subplots(3, 1, figsize = (20,25))
+    fig, ax = plt.subplots(3, 1, figsize = (20,27))
     
     ax[0].set_title('21 Baseline')
     ax[0].plot(1e-9*baseline_data['Freq (Hz)'], 20*np.log10(np.abs(baseline_data['Complex (decimal)'])), label = '(strip) baseline', color = 'red')
@@ -42,12 +42,14 @@ def loader_plotter(baseline_filename, disk_res_filename, folder):
                 20*np.log10(np.abs(disk_resonance_data['Complex (decimal)']))-20*np.log10(np.abs(baseline_data['Complex (decimal)'])), 
                label = '(disk + strip) - baseline', color = 'orange')
     ax[2].legend()
+
     plt.setp(ax, xlabel = 'Freq (GHz)', ylabel = 'S21 (dB)')
-    #plt.suptitle('Alumina Disk-Microstrip WGM Transmission Testing', fontsize = 28)
+    plt.suptitle(title, fontsize = 34)
     
    # plt.tight_layout()
     
     return baseline_data, disk_resonance_data
+
 
 def loader_plotter_chunk(baseline_filename, disk_res_filename, folder, plot_start, plot_stop):
     folder_path = '/Users/leayamashiro/whispering_gallery_MAIN/whispering_gallery/' + folder + '/'
