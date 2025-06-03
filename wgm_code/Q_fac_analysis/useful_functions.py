@@ -161,7 +161,7 @@ def loader_plotter_chunk(baseline_filename, disk_res_filename, folder, plot_star
     return baseline_data, disk_resonance_data
 
 
-def find_plot_dips(BL, disk, n_dips, f_start=None, f_stop=None): # for S21 dips in VNA data, need to already have baseline & disk data loaded in as variables
+def find_plot_dips(BL, disk, n_dips, f_start=None, f_stop=None, title = 'title'): # for S21 dips in VNA data, need to already have baseline & disk data loaded in as variables
 
     # prepare signal data 
     S21_subtracted = (20*np.log10(np.abs(disk['Complex (decimal)']))
@@ -180,13 +180,16 @@ def find_plot_dips(BL, disk, n_dips, f_start=None, f_stop=None): # for S21 dips 
     dips_sorted = pd.DataFrame(dip_dict).sort_values('dip S21', ascending=True).reset_index(inplace=False) # make DF where dips sorted by mag
     top_dips = dips_sorted.iloc[0:n_dips] # grab top 10 deepest dips
 
-    plt.figure(figsize = (17,10))
+    plt.figure(figsize = (17,13))
     plt.plot(S21_subt['freqs'], S21_subt['S21'])
     for i in range(len(top_dips)):
         plt.scatter(top_dips['freqs'].loc[i], top_dips['dip S21'].loc[i], 
                     label = f'({top_dips["freqs"][i]} GHz, {top_dips["dip S21"][i]})')
+    plt.xlabel('Frequency (GHz)')
+    plt.ylabel('S21 (arb)')
+    plt.title(title)
     plt.legend()
-    return dips_sorted
+    return S21_subt, dips_sorted
 
 def find_plot_Q_peaks(Q_freq_data):
     # clean up work for TE doubles in Q1to5
