@@ -40,41 +40,10 @@ def fix_csv(filename, filepath):
                 return None  # Return None for invalid values (if any)
         else:
             return x  # If it's already a number (e.g., float), return it unchanged
-    file['% Eigenfrequency (GHz)'] = file['% Eigenfrequency (GHz)'].apply(convert_to_j) # convert i to j for column 
-    file['% Eigenfrequency (GHz)'] = file['% Eigenfrequency (GHz)'].apply(complex)
+    file['Eigenfrequency (GHz)'] = file['Eigenfrequency (GHz)'].apply(convert_to_j) # convert i to j for column 
+    file['Eigenfrequency (GHz)'] = file['Eigenfrequency (GHz)'].apply(complex)
     file[['Frequency (GHz)', 'Quality factor (1)']] = file[['Frequency (GHz)', 'Quality factor (1)']].apply(pd.to_numeric, errors='coerce')
     return file     
-
-
-# from COMSOL, finding and plotting the peaks, having already loaded in data: 
-
-def find_plot_Q_peaks(Q_freq_data):
-    # clean up work for TE doubles in Q1to5
-    Q_freq_data['Freq rounded'] = Q_freq_data['Frequency (GHz)'].round(5)
-    # Step 3: Drop duplicates, keeping the first occurrence
-    Qfac_all = Q_freq_data.drop_duplicates(subset='Freq rounded', keep='first')
-    Q_peaks, _ = spg.find_peaks(Qfac_all['Quality factor (1)'])
-    Q_peak_freqs = Qfac_all['Frequency (GHz)'].iloc[Q_peaks]
-    Q_peak_Qs = Qfac_all['Quality factor (1)'].iloc[Q_peaks]
-    Q_cfs = Qfac_all['% search_freq (Hz)'].iloc[Q_peaks]
-    peak_dict = {'cf': Q_cfs, 'freqs': Q_peak_freqs, 'Q': Q_peak_Qs}
-    peaks = pd.DataFrame(peak_dict).sort_values('Q', ascending=False).reset_index(inplace=False)
-    top_peaks = peaks.iloc[0:20]
-
-    # plot with peaks labeled
-    plt.plot(Qfac_all['Frequency (GHz)'], Qfac_all['Quality factor (1)'])
-    plt.xlabel('Freq (GHz)')
-    plt.ylabel('Q factor')
-    plt.title('Q Factor vs. Eigenfrequency')
-
-    for i in range(len(top_peaks)):
-        plt.scatter(top_peaks['freqs'].loc[i], top_peaks['Q'].loc[i], 
-                    label = f'({top_peaks["freqs"][i]} GHz, {top_peaks["Q"][i]})')
-    plt.legend()
-
-    return Qfac_all, top_peaks
-
-
 
 
 
@@ -191,7 +160,7 @@ def find_plot_dips(BL, disk, n_dips, f_start=None, f_stop=None, title = 'title')
     plt.legend()
     return S21_subt, dips_sorted
 
-def find_plot_Q_peaks(Q_freq_data):
+def find_plot_Q_peaks(Q_freq_data, n_peaks):
     # clean up work for TE doubles in Q1to5
     Q_freq_data['Freq rounded'] = Q_freq_data['Frequency (GHz)'].round(5)
     # Step 3: Drop duplicates, keeping the first occurrence
@@ -202,7 +171,7 @@ def find_plot_Q_peaks(Q_freq_data):
     Q_cfs = Qfac_all['% search_freq (Hz)'].iloc[Q_peaks]
     peak_dict = {'cf': Q_cfs, 'freqs': Q_peak_freqs, 'Q': Q_peak_Qs}
     peaks = pd.DataFrame(peak_dict).sort_values('Q', ascending=False).reset_index(inplace=False)
-    top_peaks = peaks.iloc[0:20]
+    top_peaks = peaks.iloc[0:n_peaks]
 
     plt.figure(figsize = (15,10))
     # plot with peaks labeled
