@@ -189,7 +189,7 @@ def find_plot_Q_peaks(Q_freq_data, n_peaks):
 
 
 # function to streamline this
-def folder_plotter_dipID(baseline_file, glob_loaded, data_folder_path, f_start, f_stop):
+def folder_plotter_dipID(baseline_file, glob_loaded, data_folder_path, f_start=None, f_stop=None):
     main_directory_path = '/Users/leayamashiro/whispering_gallery_MAIN/'
     for i in range(len(glob_loaded)): 
         f_start = f_start
@@ -230,3 +230,55 @@ def VERT_folder_plotter_dipID(baseline_file, glob_loaded, data_folder_path, f_st
                                 f_start=f_start, 
                                 f_stop=f_stop,
                                 title = run_name_for_plot)
+        
+
+def get_dips_data(BL, disk, n_dips, f_start=None, f_stop=None, title = 'title'): # for S21 dips in VNA data, need to already have baseline & disk data loaded in as variables
+
+    # prepare signal data 
+    S21_subtracted = (20*np.log10(np.abs(disk['Complex (decimal)']))
+                  -20*np.log10(np.abs(BL['Complex (decimal)']))) # just to get the calibrated one ready
+    S21_freqs = 1e-9*BL['Freq (Hz)'] # convert to GHz
+    S21_sub = pd.DataFrame({'freqs':S21_freqs, 'S21':S21_subtracted}) # make calibrated data dictionary
+    if (f_start is not None) and (f_stop is not None): 
+        S21_subt = S21_sub[(S21_sub['freqs']>=f_start) & (S21_sub['freqs']<=f_stop)]
+    else: 
+        S21_subt = S21_sub
+    # peak finding
+    S21_dips, _dips = spg.find_peaks(-S21_subt['S21']) # negative because need to flip
+    dip_freqs = S21_subt['freqs'].iloc[S21_dips] # get frequency values for dips
+    dip_S21 = S21_subt['S21'].iloc[S21_dips] # get S21 of the located dips
+    dip_dict = {'freqs': dip_freqs, 'dip S21': dip_S21} # make dip dictionary
+    dips_sorted = pd.DataFrame(dip_dict).sort_values('dip S21', ascending=True).reset_index(inplace=False) # make DF where dips sorted by mag
+    top_dips = dips_sorted.iloc[0:n_dips] # grab top 10 deepest dips
+
+    return S21_subt, dips_sorted # returns the baseline-subtracted signal data and the dips in a sorted table
+
+
+
+# function to streamline this
+def folder_loader_dips_data(baseline_file, glob_loaded, data_folder_path, f_start=None, f_stop=None):
+    main_directory_path = '/Users/leayamashiro/whispering_gallery_MAIN/'
+
+    run_dict = {}
+
+    for i in range(len(glob_loaded)): 
+        # for ID-ing run parameters and printing in plots
+        test_run = glob_loaded[i].split('/')[-1]
+        run_name_split = test_run.split('_')
+        run_name_for_plot = run_name_split[0] + '_' + run_name_split[1] + '_' + run_name_split[2]
+        # loading in as data 
+        baseline = just_single_loader(main_directory_path + data_folder_path + '/' + baseline_file)
+        disk = just_single_loader(main_directory_path + data_folder_path + '/' + run_name_split[1] + '/' + test_run)
+        # plotting 
+        signal_data, dips_table = get_dips_data(BL = baseline, 
+                                                disk = disk,
+                                                n_dips = 10, 
+                                                f_start=f_start, 
+                                                f_stop=f_stop,
+                                                title = run_name_for_plot)
+        
+        run_dict[i] = {'run_name': run_name_for_plot, 
+                       'signal data': signal_data, 
+                       'dips table': dips_table}
+        
+    return run_dict

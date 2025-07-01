@@ -29,4 +29,6 @@ noisier:
 ********************************
 
 Okay I do not think it has to do with how it is resting on the Zotefoam. 
-In the data, the peak I can focus on 
+In the data, the dip I can focus on is the one at ~3.25, as that is the most consistently peaking one. 
+
+Depending on the run, the peak occurs at 3.2498 GHz or 3.2521. 
