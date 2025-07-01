@@ -64,7 +64,7 @@ def loader(baseline_filename, disk_res_filename, folder): # to load in a pair of
     return baseline_data, disk_resonance_data
 
 def loader_plotter(baseline_filename, disk_res_filename, folder): # same as above, but to plot them and plot the subtraction "calibration"
-    folder_path = '/Users/leayamashiro/whispering_gallery_MAIN/whispering_gallery/' + folder + '/'
+    folder_path = '/Users/leayamashiro/whispering_gallery_MAIN/' + folder + '/' # whispering_gallery/' + folder + '/'
     baseline_data = pd.read_csv(folder_path + baseline_filename)
     baseline_data['Complex (decimal)'] = baseline_data['Complex (decimal)'].str.replace(r'[()]', '', regex=True).apply(complex)
     disk_resonance_data = pd.read_csv(folder_path + disk_res_filename)
@@ -149,7 +149,7 @@ def find_plot_dips(BL, disk, n_dips, f_start=None, f_stop=None, title = 'title')
     dips_sorted = pd.DataFrame(dip_dict).sort_values('dip S21', ascending=True).reset_index(inplace=False) # make DF where dips sorted by mag
     top_dips = dips_sorted.iloc[0:n_dips] # grab top 10 deepest dips
 
-    plt.figure(figsize = (17,13))
+    plt.figure(figsize = (17,10))
     plt.plot(S21_subt['freqs'], S21_subt['S21'])
     for i in range(len(top_dips)):
         plt.scatter(top_dips['freqs'].loc[i], top_dips['dip S21'].loc[i], 
@@ -187,3 +187,46 @@ def find_plot_Q_peaks(Q_freq_data, n_peaks):
 
     return Qfac_all, top_peaks
 
+
+# function to streamline this
+def folder_plotter_dipID(baseline_file, glob_loaded, data_folder_path, f_start, f_stop):
+    main_directory_path = '/Users/leayamashiro/whispering_gallery_MAIN/'
+    for i in range(len(glob_loaded)): 
+        f_start = f_start
+        f_stop = f_stop
+        # for ID-ing run parameters and printing in plots
+        test_run = glob_loaded[i].split('/')[-1]
+        run_name_split = test_run.split('_')
+        run_name_for_plot = run_name_split[0] + '_' + run_name_split[1] + '_' + run_name_split[2]
+        # loading in as data 
+        baseline = just_single_loader(main_directory_path + data_folder_path + '/' + baseline_file)
+        disk = just_single_loader(main_directory_path + data_folder_path + '/' + run_name_split[1] + '/' + test_run)
+        # plotting 
+        plot = find_plot_dips(BL = baseline, 
+                                disk = disk,
+                                n_dips = 10, 
+                                f_start=f_start, 
+                                f_stop=f_stop,
+                                title = run_name_for_plot)
+        
+
+# function to streamline this
+def VERT_folder_plotter_dipID(baseline_file, glob_loaded, data_folder_path, f_start=None, f_stop=None):
+    main_directory_path = '/Users/leayamashiro/whispering_gallery_MAIN/'
+    for i in range(len(glob_loaded)): 
+        f_start = f_start
+        f_stop = f_stop
+        # for ID-ing run parameters and printing in plots
+        test_run = glob_loaded[i].split('/')[-1]
+        run_name_split = test_run.split('_')
+        run_name_for_plot = run_name_split[0] + '_' + run_name_split[1] + '_' + run_name_split[2]
+        # loading in as data 
+        baseline = just_single_loader(main_directory_path + data_folder_path + '/' + baseline_file)
+        disk = just_single_loader(main_directory_path + data_folder_path + '/vert/' + test_run)
+        # plotting 
+        plot = find_plot_dips(BL = baseline, 
+                                disk = disk,
+                                n_dips = 10, 
+                                f_start=f_start, 
+                                f_stop=f_stop,
+                                title = run_name_for_plot)

@@ -1,0 +1,32 @@
+Notes on LSB_cal0609: 
+
+Baselines looking all different. 
+Quieter baselines: 
+- 'LSB_baseline0609_3'
+- 'LSB_baseline0609_1'
+- 'LSB_BL2_1' **QUIETEST**
+
+Noisier: 
+- 'LSB_baseline0609_2'
+- 'LSB_BL2_2'
+
+
+- LSB_rot1_2.5mm: very noisy disk + strip measurements. Try using noisier baseline. 
+
+
+
+********************************
+
+---- VERTICAL TESTING ----
+
+quieter: 
+- LSB_VERT_BASELINE2
+- LSB_VERT_BASELINE1
+noisier: 
+- LSB_VERT_BASELINE3
+- LSB_weirdBL
+
+********************************
+
+Okay I do not think it has to do with how it is resting on the Zotefoam. 
+In the data, the peak I can focus on 
