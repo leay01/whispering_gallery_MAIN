@@ -187,6 +187,38 @@ def find_plot_Q_peaks(Q_freq_data, n_peaks):
 
     return Qfac_all, top_peaks
 
+def find_plot_Q_peaks_chunk(Q_freq_data, n_peaks, f_start=None, f_stop=None):
+    # clean up work for TE doubles in Q1to5
+    Q_freq_data['Freq rounded'] = Q_freq_data['Frequency (GHz)'].round(5)
+    # Step 3: Drop duplicates, keeping the first occurrence
+    Qfac_all = Q_freq_data.drop_duplicates(subset='Freq rounded', keep='first')
+    # chunk it
+    if (f_start is not None) and (f_stop is not None): 
+        Q_fac_chunked = Qfac_all[(Qfac_all['Frequency (GHz)']>=f_start)&(Qfac_all['Frequency (GHz)']<=f_stop)]
+    else: 
+        Q_fac_chunked = Qfac_all
+    # find peaks
+    Q_peaks, _ = spg.find_peaks(Q_fac_chunked['Quality factor (1)'])
+    Q_peak_freqs = Q_fac_chunked['Frequency (GHz)'].iloc[Q_peaks]
+    Q_peak_Qs = Q_fac_chunked['Quality factor (1)'].iloc[Q_peaks]
+    Q_cfs = Q_fac_chunked['% search_freq (Hz)'].iloc[Q_peaks]
+    peak_dict = {'cf': Q_cfs, 'freqs': Q_peak_freqs, 'Q': Q_peak_Qs}
+    peaks = pd.DataFrame(peak_dict).sort_values('Q', ascending=False).reset_index(inplace=False)
+    top_peaks = peaks.iloc[0:n_peaks]
+
+    plt.figure(figsize = (15,10))
+    # plot with peaks labeled
+    plt.plot(Q_fac_chunked['Frequency (GHz)'], Q_fac_chunked['Quality factor (1)'])
+    plt.xlabel('Freq (GHz)')
+    plt.ylabel('Q factor')
+    plt.title('Q Factor vs. Eigenfrequency')
+
+    for i in range(len(top_peaks)):
+        plt.scatter(top_peaks['freqs'].loc[i], top_peaks['Q'].loc[i], 
+                    label = f'({top_peaks["freqs"][i]} GHz, {top_peaks["Q"][i]})')
+    plt.legend()
+
+    return Q_fac_chunked, top_peaks
 
 # function to streamline this
 def folder_plotter_dipID(baseline_file, glob_loaded, data_folder_path, f_start=None, f_stop=None):
