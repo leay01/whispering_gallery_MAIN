@@ -164,12 +164,12 @@ def find_plot_Q_peaks(Q_freq_data, n_peaks):
     # clean up work for TE doubles in Q1to5
     Q_freq_data['Freq rounded'] = Q_freq_data['Frequency (GHz)'].round(5)
     # Step 3: Drop duplicates, keeping the first occurrence
-    Qfac_all = Q_freq_data.drop_duplicates(subset='Freq rounded', keep='first')
+    Qfac_all = Q_freq_data.copy().drop_duplicates(subset='Freq rounded', keep='first')
     Q_peaks, _ = spg.find_peaks(Qfac_all['Quality factor (1)'])
     Q_peak_freqs = Qfac_all['Frequency (GHz)'].iloc[Q_peaks]
     Q_peak_Qs = Qfac_all['Quality factor (1)'].iloc[Q_peaks]
-    Q_cfs = Qfac_all['% search_freq (Hz)'].iloc[Q_peaks]
-    peak_dict = {'cf': Q_cfs, 'freqs': Q_peak_freqs, 'Q': Q_peak_Qs}
+    Q_cfs = Qfac_all['search_freq (Hz)'].iloc[Q_peaks]
+    peak_dict = {'cf': Q_cfs, 'freqs': Q_peak_freqs, 'Q': Q_peak_Qs} #'cf': Q_cfs, 
     peaks = pd.DataFrame(peak_dict).sort_values('Q', ascending=False).reset_index(inplace=False)
     top_peaks = peaks.iloc[0:n_peaks]
 
