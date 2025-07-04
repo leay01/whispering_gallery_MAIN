@@ -160,11 +160,12 @@ def find_plot_dips(BL, disk, n_dips, f_start=None, f_stop=None, title = 'title')
     plt.legend()
     return S21_subt, dips_sorted
 
-def find_plot_Q_peaks(Q_freq_data, n_peaks):
+def find_plot_Q_peaks(Q_freq_data, n_peaks, plot=True):
     # clean up work for TE doubles in Q1to5
     Q_freq_data['Freq rounded'] = Q_freq_data['Frequency (GHz)'].round(5)
     # Step 3: Drop duplicates, keeping the first occurrence
-    Qfac_all = Q_freq_data.copy().drop_duplicates(subset='Freq rounded', keep='first')
+    Qfac_all = Q_freq_data.copy()
+    Qfac_all.drop_duplicates(subset='Freq rounded', keep='first')
     Q_peaks, _ = spg.find_peaks(Qfac_all['Quality factor (1)'])
     Q_peak_freqs = Qfac_all['Frequency (GHz)'].iloc[Q_peaks]
     Q_peak_Qs = Qfac_all['Quality factor (1)'].iloc[Q_peaks]
@@ -173,19 +174,22 @@ def find_plot_Q_peaks(Q_freq_data, n_peaks):
     peaks = pd.DataFrame(peak_dict).sort_values('Q', ascending=False).reset_index(inplace=False)
     top_peaks = peaks.iloc[0:n_peaks]
 
-    plt.figure(figsize = (15,10))
-    # plot with peaks labeled
-    plt.plot(Qfac_all['Frequency (GHz)'], Qfac_all['Quality factor (1)'])
-    plt.xlabel('Freq (GHz)')
-    plt.ylabel('Q factor')
-    plt.title('Q Factor vs. Eigenfrequency')
+    if plot==True:
+        plt.figure(figsize = (15,10))
+        # plot with peaks labeled
+        plt.plot(Qfac_all['Frequency (GHz)'], Qfac_all['Quality factor (1)'])
+        plt.xlabel('Freq (GHz)')
+        plt.ylabel('Q factor')
+        plt.title('Q Factor vs. Eigenfrequency')
 
-    for i in range(len(top_peaks)):
-        plt.scatter(top_peaks['freqs'].loc[i], top_peaks['Q'].loc[i], 
-                    label = f'({top_peaks["freqs"][i]} GHz, {top_peaks["Q"][i]})')
-    plt.legend()
+        for i in range(len(top_peaks)):
+            plt.scatter(top_peaks['freqs'].loc[i], top_peaks['Q'].loc[i], 
+                        label = f'({top_peaks["freqs"][i]} GHz, {top_peaks["Q"][i]})')
+        plt.legend()
 
-    return Qfac_all, top_peaks
+    else: 
+
+        return Qfac_all, top_peaks
 
 def find_plot_Q_peaks_chunk(Q_freq_data, n_peaks, f_start=None, f_stop=None):
     # clean up work for TE doubles in Q1to5
