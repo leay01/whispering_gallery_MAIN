@@ -190,6 +190,30 @@ def find_plot_Q_peaks(Q_freq_data, n_peaks, plot=True):
     else: 
 
         return Qfac_all, top_peaks
+    
+
+def find_plot_Q_peaks_no_dup(Q_freq_data, n_peaks, plot=True):
+    Q_peaks, _ = spg.find_peaks(Q_freq_data['Quality factor (1)'])
+    Q_peaks_df = Q_freq_data.iloc[Q_peaks]
+    top_peaks = Q_peaks_df.loc[0:n_peaks]
+
+    if plot==True:
+        plt.figure(figsize = (15,10))
+        # plot with peaks labeled
+        plt.plot(Qfac_all['Frequency (GHz)'], Qfac_all['Quality factor (1)'])
+        plt.xlabel('Freq (GHz)')
+        plt.ylabel('Q factor')
+        plt.title('Q Factor vs. Eigenfrequency')
+
+        for i in range(len(top_peaks)):
+            plt.scatter(top_peaks['freqs'].loc[i], top_peaks['Q'].loc[i], 
+                        label = f'({top_peaks["freqs"][i]} GHz, {top_peaks["Q"][i]})')
+        plt.legend()
+
+    else: 
+
+        return top_peaks
+
 
 def find_plot_Q_peaks_chunk(Q_freq_data, n_peaks, f_start=None, f_stop=None):
     # clean up work for TE doubles in Q1to5
